@@ -84,7 +84,11 @@ public class YouAreEll {
         }
 
         if (method.equalsIgnoreCase("PUT")) {
-            return "PUT currently under maintenance. sorry!";
+            RequestBody body = RequestBody.create(JSON, jpayload);
+            request = new Request.Builder()
+                    .url(finalURL)
+                    .put(body)
+                    .build();
         }
 
         if (request != null) {
