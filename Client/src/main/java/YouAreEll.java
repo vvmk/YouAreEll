@@ -46,7 +46,6 @@ public class YouAreEll {
         String mainurl = "/ids";
         if (path.length > 0) {
             mainurl = mainurl + path[0];
-            return "currently under maintenace, sorry!";
         }
         return MakeURLCall(mainurl, "GET", "");
     }
@@ -56,8 +55,12 @@ public class YouAreEll {
         return MakeURLCall("/ids/" + msg.getFromid() + "/messages", "POST", payload);
     }
 
-    public String get_messages() throws IOException {
-        return MakeURLCall("/messages", "GET", "");
+    public String get_messages(String... path) throws IOException {
+        String mainurl = "/messages";
+        if (path.length > 0)
+            mainurl = "/ids/" + path[0] + mainurl;
+
+        return MakeURLCall(mainurl, "GET", "");
     }
 
     public String MakeURLCall(String mainurl, String method, String jpayload) throws IOException {

@@ -103,15 +103,21 @@ public class SimpleShell {
                 if (list.get(0).equals("messages")) {
                     String results;
 
-                    if (list.size() > 1) {
-                        String path = "/" + list.get(1) + "/messages/" + list.get(2);
+                    if (list.size() == 3) {
+                        String path = "/" + list.get(1) + "/from/" + list.get(2);
                         results = webber.get_ids(path);
+                    } else if (list.size() == 2) {
+                        results = webber.get_messages(list.get(1));
                     } else
                         results = webber.get_messages();
 
                     List<Message> msgs = mapper.readValue(results, new TypeReference<List<Message>>() {
                     });
-                    msgs.forEach(msg -> SimpleShell.prettyPrint(msg.toString()));
+                    try {
+                        msgs.forEach(msg -> SimpleShell.prettyPrint(msg.toString()));
+                    } catch (NullPointerException npe) {
+                        System.out.println("No messages found for user \""+list.get(1)+"\"");
+                    }
                     continue;
                 }
 
