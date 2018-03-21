@@ -12,19 +12,19 @@ nicely formatted for your user. If you manage to get this all done in a reasonab
 
 Under-A-Rock acts a little (very little) like a twitter server or chat server. 
 
-You register your name and githubid by creating an ID JSON payload (see below) and POSTing it to the server. You can GET 
+You register your name and github by creating an ID JSON payload (see below) and POSTing it to the server. You can GET 
 all the ids registered by sending a GET request to the same URL. Once you've received all the ids, you can send
 messages to the world or to a specific Github_id.
 
 You 
 can send a message to the global timeline by POSTing a Message JSON object to the URL below.
-If you leave the "to id" field empty, the message is "to the world". If you fill out the the JSON template with
-a valid github_id in the "to id" field of the JSON payload, then that message is addressed to that friend. Yes, all 
+If you leave the "to userid" field empty, the message is "to the world". If you fill out the the JSON template with
+a valid github_id in the "to userid" field of the JSON payload, then that message is addressed to that friend. Yes, all 
 messages can be seen by users of the system. There are JSON templates below for both Ids and Messages.
 
 When you send a new Message or Id JSON object to the server, it records it, and fills in one or two fields. 
 A Message gets an assigned sequence number and a timestamp of when it was received by the server. An ID
-object gets a "user id" field assigned to it.
+object gets a "user userid" field assigned to it.
 Any sequence number, timestamp or userid you put into a JSON template
 gets overwritten by the server when you POST it. 
 
@@ -73,15 +73,15 @@ the IDs API is:
 
 #### URL: /ids/
 * `GET` : Get all github ids registered
-* `POST` : add your github id / name to be registered
-* `PUT` : change the name linked to your github id
+* `POST` : add your github userid / name to be registered
+* `PUT` : change the name linked to your github userid
 
 json payload for /ids/ - this is a sample
 ```json
 {
-    "userid": "-", // gets filled w id
+    "userid": "-", // gets filled w userid
     "name": "Kris",
-    "githubid": "xt0fer"
+    "github": "xt0fer"
 }
 ```
  
@@ -95,9 +95,9 @@ cmd?
   into the shell, your command processor creates a JSON object which looks like:
  ```json
  {
-     "userid": "-", // gets filled w id
+     "userid": "-", // gets filled w userid
      "name": "Kris",
-     "githubid": "xt0fer"
+     "github": "xt0fer"
  }
  ```
 and send it as the body of a POST request to  `http://zipcode.rocks:8085/ids/`

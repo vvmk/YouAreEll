@@ -1,15 +1,20 @@
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SimpleShell {
 
 
     public static void prettyPrint(String output) {
-        // yep, make an effort to format things nicely, eh?
         System.out.println(output);
     }
 
@@ -22,7 +27,9 @@ public class SimpleShell {
 
         ProcessBuilder pb = new ProcessBuilder();
         List<String> history = new ArrayList<>();
+
         int index = 0;
+        String fromId = "";
         //we break out with <ctrl c>
         while (true) {
             //read what the user enters
@@ -42,13 +49,29 @@ public class SimpleShell {
             }
 
             //loop through to see if parsing worked
+            StringBuilder sb = new StringBuilder();
+            int qCount = 0;
             for (int i = 0; i < commands.length; i++) {
-                //System.out.println(commands[i]); //***check to see if parsing/split worked***
-                list.add(commands[i]);
+                sb.append(commands[i]);
 
+                Pattern p = Pattern.compile("\"");
+                Matcher matcher = p.matcher(commands[i]);
+
+                while (matcher.find())
+                    qCount++;
+
+                if (qCount % 2 == 1) {
+                    sb.append(" ");
+                    continue;
+                }
+
+                p = Pattern.compile("\"");
+                list.add(p.matcher(sb.toString()).replaceAll(""));
+                sb.setLength(0);
             }
-            System.out.print(list); //***check to see if list was added correctly***
+            //System.out.println(list);
             history.addAll(list);
+
             try {
                 //display history of shell with index
                 if (list.get(list.size() - 1).equals("history")) {
@@ -62,17 +85,51 @@ public class SimpleShell {
                 // ids
                 if (list.contains("ids")) {
                     String results = webber.get_ids();
-                    SimpleShell.prettyPrint(results);
+                    List<User> users = new ObjectMapper().readValue(results, new TypeReference<List<User>>(){});
+                    users.forEach(user -> SimpleShell.prettyPrint(user.toString()));
                     continue;
                 }
 
                 // messages
-                if (list.contains("messages")) {
-                    String results = webber.get_messages();
-                    SimpleShell.prettyPrint(results);
+                if (list.get(0).equals("messages")) {
+                    String results;
+
+                    if (list.size() > 1) {
+                        String path = "/" + list.get(1) + "/messages/" + list.get(2);
+                        results = webber.get_ids(path);
+                    } else
+                        results = webber.get_messages();
+
+                    List<Message> msgs = new ObjectMapper().readValue(results, new TypeReference<List<Message>>(){});
+                    msgs.forEach(msg -> SimpleShell.prettyPrint(msg.toString()));
                     continue;
                 }
-                // you need to add a bunch more.
+
+                //send
+                if (list.get(0).equals("send")) {
+                    String fromid = fromId;
+                    String message = list.get(1);
+                    String toid = list.get(2).equalsIgnoreCase("to") ? list.get(3) : "";
+                    String sequence = "-";
+                    Message msg = new Message(sequence, fromid, toid, message);
+                    String response = webber.post_messages(msg);
+                    SimpleShell.prettyPrint(response);
+                    continue;
+                }
+
+                //set fromId
+                if (list.get(0).equals("set")) {
+                    fromId = list.get(1);
+                    continue;
+                }
+
+                //update
+                if (list.get(0).equals("put")) {
+                    User u = new User("", list.get(1), fromId);
+                    String response = webber.put_ids(u);
+                    SimpleShell.prettyPrint(response);
+                    continue;
+                }
 
                 //!! command returns the last command in history
                 if (list.get(list.size() - 1).equals("!!")) {
@@ -106,6 +163,7 @@ public class SimpleShell {
 
             //catch ioexception, output appropriate message, resume waiting for input
             catch (IOException e) {
+                //e.printStackTrace();
                 System.out.println("Input Error, Please try again!");
             }
             // So what, do you suppose, is the meaning of this comment?
