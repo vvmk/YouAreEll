@@ -1,4 +1,3 @@
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -72,6 +71,8 @@ public class SimpleShell {
             //System.out.println(list);
             history.addAll(list);
 
+            ObjectMapper mapper = new ObjectMapper();
+
             try {
                 //display history of shell with index
                 if (list.get(list.size() - 1).equals("history")) {
@@ -83,10 +84,18 @@ public class SimpleShell {
                 // Specific Commands.
 
                 // ids
-                if (list.contains("ids")) {
-                    String results = webber.get_ids();
-                    List<User> users = new ObjectMapper().readValue(results, new TypeReference<List<User>>(){});
-                    users.forEach(user -> SimpleShell.prettyPrint(user.toString()));
+                if (list.get(0).equals("ids")) {
+                    if (list.size() == 1) {
+                        String results = webber.get_ids();
+                        List<User> users = mapper.readValue(results, new TypeReference<List<User>>() {
+                        });
+                        users.forEach(user -> SimpleShell.prettyPrint(user.toString()));
+                    } else {
+                        fromId = list.get(2);
+                        User u = new User("-", list.get(1), fromId);
+                        String results = webber.post_ids(mapper.writeValueAsString(u));
+                        SimpleShell.prettyPrint(results);
+                    }
                     continue;
                 }
 
@@ -100,7 +109,8 @@ public class SimpleShell {
                     } else
                         results = webber.get_messages();
 
-                    List<Message> msgs = new ObjectMapper().readValue(results, new TypeReference<List<Message>>(){});
+                    List<Message> msgs = mapper.readValue(results, new TypeReference<List<Message>>() {
+                    });
                     msgs.forEach(msg -> SimpleShell.prettyPrint(msg.toString()));
                     continue;
                 }
