@@ -18,10 +18,7 @@ public class YouAreEll {
 
     public static void main(String[] args) throws IOException {
         YouAreEll urlhandler = new YouAreEll();
-
         ObjectMapper mapper = new ObjectMapper();
-        String payload = "{\"userid\":\"-\",\"name\":\"\",\"githubid\":\"" +
-                urlhandler.getFromId() + "\"}";
     }
 
     public String getFromId() {
@@ -59,6 +56,9 @@ public class YouAreEll {
         String mainurl = "/messages";
         if (path.length > 0)
             mainurl = "/ids/" + path[0] + mainurl;
+
+        if (path.length > 1)
+            mainurl = mainurl + "/" + path[1];
 
         return MakeURLCall(mainurl, "GET", "");
     }

@@ -121,6 +121,13 @@ public class SimpleShell {
                     continue;
                 }
 
+                //message <sequence>
+                if (list.get(0).equals("message")) {
+                    String results = webber.get_messages(fromId, list.get(1));
+                    SimpleShell.prettyPrint(results);
+                    continue;
+                }
+
                 //send
                 if (list.get(0).equals("send")) {
                     String fromid = fromId;
